@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capgo Self-Hosted Update Server - Admin</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --primary-hover: #0056b3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --border: #dee2e6;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 1.75rem;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .api-info {
+            background-color: #e7f3ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 4px;
+        }
+        
+        .api-info h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+        
+        .api-endpoint {
+            background-color: #f8f9fa;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.875rem;
+            border: 1px solid var(--border);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.15s ease-in-out;
+        }
+        
+        input:focus, select:focus {
+            outline: 0;
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-input-button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--light);
+            border: 1px dashed var(--border);
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+        }
+        
+        .file-input-button:hover {
+            background-color: #e9ecef;
+        }
+        
+        .file-input-button.has-file {
+            border-color: var(--success);
+            background-color: #d4edda;
+        }
+        
+        .file-name {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+        
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            text-align: center;
+            vertical-align: middle;
+            user-select: none;
+            border: 1px solid transparent;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 4px;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            color: #fff;
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: #0056b3;
+        }
+        
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .instructions {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 2rem 0;
+            border-radius: 4px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .instructions ol {
+            padding-left: 1.5rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Capgo Self-Hosted Update Server</h1>
+        </div>
+        
+        <div class="content">
+            <div class="api-info">
+                <h3>API Endpoints:</h3>
+                <div class="api-endpoint">GET /api/update - Check for updates</div>
+                <div class="api-endpoint">POST /api/stats - Update statistics</div>
+                <div class="api-endpoint">POST /api/channel_self - Channel management</div>
+                <div class="api-endpoint">POST /api/admin/upload - Upload new updates</div>
+            </div>
+
+            <h2>Upload New Update</h2>
+            
+            <div class="instructions">
+                <h3>How to Use</h3>
+                <ol>
+                    <li>Build your web app: <code>pnpm build</code></li>
+                    <li>Zip the contents of the <code>dist</code> folder</li>
+                    <li>Select the ZIP file using the file picker below</li>
+                    <li>Fill in the version, platform, and other details</li>
+                    <li>Click "Upload Update"</li>
+                </ol>
+            </div>
+
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="bundle">Bundle ZIP File:</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-input-button" id="fileInputButton">
+                            Choose File
+                        </div>
+                        <input type="file" id="bundle" name="bundle" accept=".zip,application/zip" required>
+                    </div>
+                    <div class="file-name" id="fileName">No file chosen</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="version">Version (e.g., 1.2.3):</label>
+                    <input type="text" id="version" name="version" required placeholder="1.2.3">
+                </div>
+                
+                <div class="form-group">
+                    <label for="platform">Platform:</label>
+                    <select id="platform" name="platform" required>
+                        <option value="android">Android</option>
+                        <option value="ios">iOS</option>
+                        <option value="web">Web</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="channel">Channel:</label>
+                    <select id="channel" name="channel" required>
+                        <option value="stable">Stable</option>
+                        <option value="beta">Beta</option>
+                        <option value="dev">Development</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="environment">Environment:</label>
+                    <select id="environment" name="environment" required>
+                        <option value="prod">Production</option>
+                        <option value="staging">Staging</option>
+                        <option value="dev">Development</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="required">Required Update:</label>
+                    <select id="required" name="required" required>
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="uploadButton">Upload Update</button>
+            </form>
+            
+            <div id="statusMessage" class="status"></div>
+        </div>
+    </div>
+
+    <script>
+        // File input handling
+        const fileInput = document.getElementById('bundle');
+        const fileInputButton = document.getElementById('fileInputButton');
+        const fileName = document.getElementById('fileName');
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadButton = document.getElementById('uploadButton');
+        const statusMessage = document.getElementById('statusMessage');
+        
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                fileName.textContent = this.files[0].name;
+                fileInputButton.classList.add('has-file');
+                fileInputButton.textContent = 'File Selected';
+            } else {
+                fileName.textContent = 'No file chosen';
+                fileInputButton.classList.remove('has-file');
+                fileInputButton.textContent = 'Choose File';
+            }
+        });
+        
+        // Form submission
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!fileInput.files || !fileInput.files[0]) {
+                showStatus('Please select a bundle file', 'error');
+                return;
+            }
+            
+            const version = document.getElementById('version').value;
+            if (!version) {
+                showStatus('Please enter a version number', 'error');
+                return;
+            }
+            
+            // Show loading status
+            showStatus('Uploading update...', 'loading');
+            uploadButton.disabled = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('bundle', fileInput.files[0]);
+                formData.append('version', document.getElementById('version').value);
+                formData.append('platform', document.getElementById('platform').value);
+                formData.append('channel', document.getElementById('channel').value);
+                formData.append('environment', document.getElementById('environment').value);
+                formData.append('required', document.getElementById('required').value);
+                
+                const response = await fetch('/api/admin/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showStatus(`Success: ${result.message}`, 'success');
+                    
+                    // Reset form
+                    uploadForm.reset();
+                    fileName.textContent = 'No file chosen';
+                    fileInputButton.classList.remove('has-file');
+                    fileInputButton.textContent = 'Choose File';
+                } else {
+                    const errorMessage = result.error || result.message || 'Upload failed';
+                    showStatus(`Error: ${errorMessage}`, 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                uploadButton.disabled = false;
+            }
+        });
+        
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status ' + type;
+            statusMessage.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Initialize form with some default values for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('version').value = '1.0.0';
+            document.getElementById('platform').value = 'android';
+            document.getElementById('channel').value = 'stable';
+            document.getElementById('environment').value = 'prod';
+            document.getElementById('required').value = 'false';
+        });
+    </script>
+</body>
+</html>

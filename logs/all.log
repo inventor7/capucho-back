@@ -1,0 +1,229 @@
+2025-10-06 16:28:54:2854 [32minfo[39m: [32mSSL enabled server created[39m
+2025-10-06 16:28:53:2853 [32minfo[39m: [32mSupabase service initialized[39m
+2025-10-06 16:28:54:2854 [32minfo[39m: [32mServer started successfully[39m
+2025-10-06 20:35:30:3530 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:35:30:3530 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:35:30:3530 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:35:31:3531 [33mwarn[39m: [33mOperational error[39m
+2025-10-06 20:35:36:3536 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:35:36:3536 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:35:36:3536 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:35:37:3537 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:35:37:3537 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:35:37:3537 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:38:14:3814 [32minfo[39m: [32mSSL enabled server created[39m
+2025-10-06 20:38:13:3813 [32minfo[39m: [32mSupabase service initialized[39m
+2025-10-06 20:38:14:3814 [32minfo[39m: [32mServer started successfully[39m
+2025-10-06 20:38:19:3819 [33mwarn[39m: [33mOperational error[39m
+2025-10-06 20:38:48:3848 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:38:48:3848 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:38:48:3848 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:38:48:3848 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:38:48:3848 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:38:48:3848 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:39:00:390 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:39:00:390 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:39:00:390 [31merror[39m: [31mChannels fetch failed[39m
+2025-10-06 20:39:01:391 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:39:01:391 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:39:01:391 [31merror[39m: [31mChannels fetch failed[39m
+2025-10-06 20:39:50:3950 [32minfo[39m: [32mShutting down server...[39m
+2025-10-06 20:39:53:3953 [32minfo[39m: [32mSSL enabled server created[39m
+2025-10-06 20:39:53:3953 [32minfo[39m: [32mSupabase service initialized[39m
+2025-10-06 20:39:53:3953 [32minfo[39m: [32mServer started successfully[39m
+2025-10-06 20:39:59:3959 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:39:59:3959 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:39:59:3959 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:39:59:3959 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:39:59:3959 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:39:59:3959 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:43:12:4312 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:43:12:4312 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:43:12:4312 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:43:13:4313 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:43:13:4313 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:43:13:4313 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:43:36:4336 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:43:36:4336 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:43:36:4336 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:43:36:4336 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:43:36:4336 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:43:36:4336 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:44:04:444 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:44:04:444 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:44:04:444 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:44:04:444 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:44:04:444 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:44:04:444 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:44:32:4432 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:44:32:4432 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:44:32:4432 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:44:32:4432 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:44:32:4432 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:44:32:4432 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:44:38:4438 [32minfo[39m: [32mSSL enabled server created[39m
+2025-10-06 20:44:38:4438 [32minfo[39m: [32mSupabase service initialized[39m
+2025-10-06 20:44:38:4438 [32minfo[39m: [32mServer started successfully[39m
+2025-10-06 20:45:00:450 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:45:00:450 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:45:00:450 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:45:01:451 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:45:01:451 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:45:01:451 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:47:13:4713 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:47:13:4713 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:47:13:4713 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:47:14:4714 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:47:14:4714 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:47:14:4714 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:48:17:4817 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:48:17:4817 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:48:17:4817 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:48:17:4817 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:48:17:4817 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:48:17:4817 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:48:19:4819 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:48:19:4819 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:48:19:4819 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:48:19:4819 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:48:19:4819 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:48:19:4819 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:48:20:4820 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:48:20:4820 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:48:20:4820 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:48:20:4820 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:48:20:4820 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:48:20:4820 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:49:16:4916 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:49:16:4916 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:49:16:4916 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:49:16:4916 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:49:16:4916 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:49:16:4916 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:50:28:5028 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:50:28:5028 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:50:28:5028 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:50:28:5028 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:50:28:5028 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:50:28:5028 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:50:29:5029 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:50:29:5029 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:50:29:5029 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:50:29:5029 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:50:29:5029 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:50:29:5029 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:52:26:5226 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:52:26:5226 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:52:26:5226 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:52:26:5226 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:52:26:5226 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:52:26:5226 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:52:32:5232 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:52:32:5232 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:52:32:5232 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:52:33:5233 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:52:33:5233 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:52:33:5233 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:54:32:5432 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:54:32:5432 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:54:32:5432 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:54:33:5433 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:54:33:5433 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:54:33:5433 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:55:17:5517 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:55:17:5517 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:55:17:5517 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:55:17:5517 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:55:17:5517 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:55:17:5517 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:57:24:5724 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:57:24:5724 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:57:24:5724 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:57:28:5728 [32minfo[39m: [32mShutting down server...[39m
+2025-10-06 20:57:31:5731 [32minfo[39m: [32mSSL enabled server created[39m
+2025-10-06 20:57:31:5731 [32minfo[39m: [32mSupabase service initialized[39m
+2025-10-06 20:57:31:5731 [32minfo[39m: [32mServer started successfully[39m
+2025-10-06 20:57:37:5737 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:57:37:5737 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:57:37:5737 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:57:37:5737 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:57:37:5737 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:57:37:5737 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:58:23:5823 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:58:23:5823 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:58:23:5823 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 20:58:23:5823 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 20:58:23:5823 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 20:58:23:5823 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:01:02:12 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:01:02:12 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:01:02:12 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:01:03:13 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:01:03:13 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:01:03:13 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:02:55:255 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:02:55:255 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:02:55:255 [31merror[39m: [31mChannels fetch failed[39m
+2025-10-06 21:02:55:255 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:02:55:255 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:02:55:255 [31merror[39m: [31mChannels fetch failed[39m
+2025-10-06 21:02:56:256 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:02:56:256 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:02:56:256 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:02:57:257 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:02:57:257 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:02:57:257 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:03:27:327 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:03:27:327 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:03:27:327 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:03:44:344 [33mwarn[39m: [33mOperational error[39m
+2025-10-06 21:06:16:616 [32minfo[39m: [32mSSL enabled server created[39m
+2025-10-06 21:06:16:616 [32minfo[39m: [32mSupabase service initialized[39m
+2025-10-06 21:06:16:616 [32minfo[39m: [32mServer started successfully[39m
+2025-10-06 21:06:20:620 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:06:20:620 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:06:20:620 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:06:20:620 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:06:20:620 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:06:20:620 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:06:30:630 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:06:30:630 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:06:30:630 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:06:30:630 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:06:30:630 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:06:30:630 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:09:47:947 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:09:47:947 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:09:47:947 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:09:47:947 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:09:47:947 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:09:47:947 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:13:58:1358 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:13:58:1358 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:13:58:1358 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:13:58:1358 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:13:58:1358 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:13:58:1358 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:14:14:1414 [32minfo[39m: [32mShutting down server...[39m
+2025-10-06 21:14:18:1418 [32minfo[39m: [32mSSL enabled server created[39m
+2025-10-06 21:14:18:1418 [32minfo[39m: [32mSupabase service initialized[39m
+2025-10-06 21:14:18:1418 [32minfo[39m: [32mServer started successfully[39m
+2025-10-06 21:14:21:1421 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:14:21:1421 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:14:21:1421 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:14:21:1421 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:14:21:1421 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:14:21:1421 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:17:49:1749 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:17:49:1749 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:17:49:1749 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:17:49:1749 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:17:49:1749 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:17:49:1749 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:18:13:1813 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:18:13:1813 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:18:13:1813 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:18:13:1813 [31merror[39m: [31mSupabase query error[39m
+2025-10-06 21:18:13:1813 [31merror[39m: [31mSupabase service query error[39m
+2025-10-06 21:18:13:1813 [31merror[39m: [31mDashboard stats fetch failed[39m
+2025-10-06 21:18:15:1815 [32minfo[39m: [32mShutting down server...[39m
