@@ -24,7 +24,11 @@ export const corsMiddleware = cors({
   origin: config.security.cors.origin,
   credentials: config.security.cors.credentials,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "ngrok-skip-browser-warning",
+  ],
 });
 
 // Rate limiting middleware
