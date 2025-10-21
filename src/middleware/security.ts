@@ -4,7 +4,6 @@ import rateLimit from "express-rate-limit";
 import { Request, Response, NextFunction } from "express";
 import config from "@/config";
 
-// Security headers middleware
 export const securityHeaders = helmet({
   contentSecurityPolicy: {
     directives: {
@@ -19,7 +18,6 @@ export const securityHeaders = helmet({
   },
 });
 
-// CORS middleware
 export const corsMiddleware = cors({
   origin: config.security.cors.origin,
   credentials: config.security.cors.credentials,
@@ -31,7 +29,6 @@ export const corsMiddleware = cors({
   ],
 });
 
-// Rate limiting middleware
 export const rateLimiter = rateLimit({
   windowMs: config.security.rateLimit.windowMs,
   max: config.security.rateLimit.max,
@@ -42,13 +39,11 @@ export const rateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Request sanitization middleware
 export const sanitizeRequest = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  // Remove any potential XSS from query parameters
   if (req.query) {
     Object.keys(req.query).forEach((key) => {
       if (typeof req.query[key] === "string") {
@@ -60,7 +55,6 @@ export const sanitizeRequest = (
     });
   }
 
-  // Remove any potential XSS from body parameters
   if (req.body && typeof req.body === "object") {
     const sanitizeObject = (obj: any): any => {
       if (typeof obj === "string") {

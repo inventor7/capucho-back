@@ -42,14 +42,12 @@ class FileService implements IFileService {
       throw new Error("No file uploaded");
     }
 
-    // Check file size
     if (file.size > config.upload.maxFileSize) {
       throw new Error(
         `File size exceeds limit of ${config.upload.maxFileSize} bytes`
       );
     }
 
-    // Check file type
     const allowedTypes = config.upload.allowedMimeTypes;
     if (!allowedTypes.includes(file.mimetype)) {
       throw new Error(
@@ -59,14 +57,12 @@ class FileService implements IFileService {
       );
     }
 
-    // Additional validation can be added here
     logger.info("File validation passed", {
       fileName: file.originalname,
       size: file.size,
     });
   }
 
-  // Multer configuration
   createMulterUpload() {
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
@@ -86,7 +82,6 @@ class FileService implements IFileService {
     });
   }
 
-  // Clean up local files after upload (optional)
   cleanupLocalFile(filePath: string): void {
     try {
       if (fs.existsSync(filePath)) {
@@ -99,5 +94,4 @@ class FileService implements IFileService {
   }
 }
 
-// Export singleton instance
 export default new FileService();

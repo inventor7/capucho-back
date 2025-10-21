@@ -1,33 +1,28 @@
 import { Request, Response } from "express";
 import {
   ChannelAssignmentRequest,
-  ChannelResponse,
-  ChannelsResponse,
   ValidationError,
   IUpdateService,
 } from "@/types";
 import updateService from "@/services/updateService";
 import logger from "@/utils/logger";
 
-/**
- * Controller for handling channel management operations
- */
 class ChannelController {
-  /**
-   * Creates an instance of ChannelController
-   * @param updateService - Service for channel operations
-   */
   constructor(private readonly updateService: IUpdateService) {}
 
-  /**
-   * Assign a channel to a device
-   * POST /api/channel_self
-   */
   async assignChannel(req: Request, res: Response): Promise<void> {
     try {
       const { channel, deviceId, appId, platform } = req.body;
 
-      // Validation
+      logger.info("Assigning channel to device", {
+        channel,
+        deviceId,
+        appId,
+        platform,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+
       if (!channel || !deviceId || !appId || !platform) {
         throw new ValidationError("Missing required parameters");
       }
@@ -46,7 +41,16 @@ class ChannelController {
         message: `Assigned to channel: ${channel}`,
       });
     } catch (error) {
-      logger.error("Channel assignment failed", { error });
+      logger.error("Channel assignment failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        channel: req.body.channel,
+        deviceId: req.body.deviceId,
+        appId: req.body.appId,
+        platform: req.body.platform,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       if (error instanceof ValidationError) {
         res.status(error.statusCode).json({ error: error.message });
       } else {
@@ -55,15 +59,18 @@ class ChannelController {
     }
   }
 
-  /**
-   * Get channel for a device
-   * GET /api/channel
-   */
   async getDeviceChannel(req: Request, res: Response): Promise<void> {
     try {
       const { deviceId, appId, platform } = req.query;
 
-      // Validation
+      logger.info("Getting device channel", {
+        deviceId,
+        appId,
+        platform,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+
       if (!deviceId || !appId || !platform) {
         throw new ValidationError(
           "Missing required parameters: deviceId, appId, platform"
@@ -78,7 +85,13 @@ class ChannelController {
 
       res.json(result);
     } catch (error) {
-      logger.error("Get device channel failed", { error });
+      logger.error("Get device channel failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        query: req.query,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       if (error instanceof ValidationError) {
         res.status(error.statusCode).json({ error: error.message });
       } else {
@@ -87,15 +100,17 @@ class ChannelController {
     }
   }
 
-  /**
-   * Get all available channels for an app
-   * GET /api/channels
-   */
   async getAvailableChannels(req: Request, res: Response): Promise<void> {
     try {
       const { appId, platform } = req.query;
 
-      // Validation
+      logger.info("Getting available channels", {
+        appId,
+        platform,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+
       if (!appId || !platform) {
         throw new ValidationError(
           "Missing required parameters: appId, platform"
@@ -109,7 +124,13 @@ class ChannelController {
 
       res.json(result);
     } catch (error) {
-      logger.error("Get available channels failed", { error });
+      logger.error("Get available channels failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        query: req.query,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       if (error instanceof ValidationError) {
         res.status(error.statusCode).json({ error: error.message });
       } else {
@@ -119,5 +140,4 @@ class ChannelController {
   }
 }
 
-// Export singleton instance
 export default new ChannelController(updateService);

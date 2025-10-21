@@ -3,23 +3,22 @@ import { StatsRequest, ValidationError, IUpdateService } from "@/types";
 import updateService from "@/services/updateService";
 import logger from "@/utils/logger";
 
-/**
- * Controller for handling statistics logging operations
- */
 class StatsController {
-  /**
-   * Creates an instance of StatsController
-   * @param updateService - Service for logging statistics
-   */
   constructor(private readonly updateService: IUpdateService) {}
 
-  /**
-   * Log update statistics
-   * POST /api/stats
-   */
   async logStats(req: Request, res: Response): Promise<void> {
     try {
       const { bundleId, status, deviceId, appId, platform } = req.body;
+
+      logger.info("Logging statistics", {
+        bundleId,
+        status,
+        deviceId,
+        appId,
+        platform,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
 
       // Validation
       if (!bundleId || !status || !deviceId || !appId || !platform) {
@@ -37,7 +36,17 @@ class StatsController {
       await this.updateService.logStats(statsRequest);
       res.status(200).send("OK");
     } catch (error) {
-      logger.error("Stats logging failed", { error });
+      logger.error("Stats logging failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        bundleId: req.body.bundleId,
+        status: req.body.status,
+        deviceId: req.body.deviceId,
+        appId: req.body.appId,
+        platform: req.body.platform,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       if (error instanceof ValidationError) {
         res.status(error.statusCode).json({ error: error.message });
       } else {

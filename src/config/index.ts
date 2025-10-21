@@ -2,10 +2,8 @@ import dotenv from "dotenv";
 import Joi from "joi";
 import { AppConfig, Environment } from "@/types";
 
-// Load environment variables
 dotenv.config();
 
-// Environment variables schema
 const envSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid("development", "production", "test")
@@ -13,22 +11,18 @@ const envSchema = Joi.object({
   PORT: Joi.number().default(3000),
   ENVIRONMENT: Joi.string().valid("dev", "staging", "prod").default("prod"),
 
-  // Supabase configuration
   SUPABASE_URL: Joi.string().uri().required(),
   SUPABASE_KEY: Joi.string().required(),
   SUPABASE_SERVICE_KEY: Joi.string().optional(),
   BUCKET_NAME: Joi.string().default("updates"),
 
-  // Security configuration
   CORS_ORIGIN: Joi.alternatives()
     .try(Joi.string(), Joi.array().items(Joi.string()))
     .default("*"),
 
-  // Upload configuration
   MAX_FILE_SIZE: Joi.number().default(100 * 1024 * 1024), // 100MB
-}).unknown(true); // Allow unknown environment variables
+}).unknown(true);
 
-// Validate environment variables
 const { error, value: envVars } = envSchema.validate(process.env);
 
 if (error) {
@@ -39,7 +33,6 @@ if (error) {
   );
 }
 
-// Configuration object
 const config: AppConfig = {
   port: envVars.PORT,
   environment: envVars.ENVIRONMENT as Environment,
@@ -69,12 +62,10 @@ const config: AppConfig = {
   },
 };
 
-// Validate critical configuration
 if (!config.supabase.url || !config.supabase.key) {
   throw new Error("Supabase URL and API key are required");
 }
 
 export default config;
 
-// Export individual config sections for convenience
 export const { port, environment, supabase, security, upload } = config;

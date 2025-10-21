@@ -1,13 +1,7 @@
 import { Request, Response } from "express";
 import {
-  UploadRequest,
-  BundleData,
-  ChannelData,
-  DeviceData,
   DashboardStatsResponse,
   UpdateRecord,
-  DeviceChannelRecord,
-  UpdateStatsRecord,
   ValidationError,
   IFileService,
   ISupabaseService,
@@ -45,10 +39,25 @@ class AdminController {
         required = false,
       } = req.body;
 
-      // Validate file
+      logger.info("Upload bundle request received", {
+        version,
+        platform,
+        channel,
+        environment,
+        required,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+        file: req.file
+          ? {
+              originalName: req.file.originalname,
+              size: req.file.size,
+              mimetype: req.file.mimetype,
+            }
+          : null,
+      });
+
       await this.fileService.validateFile(req.file);
 
-      // Validate parameters
       if (!version || !platform || !semver.valid(version)) {
         throw new ValidationError(
           "Missing or invalid parameters: version, platform (semver required)"
@@ -61,18 +70,15 @@ class AdminController {
         );
       }
 
-      // Calculate checksum
       const buffer =
         req.file!.buffer || require("fs").readFileSync(req.file!.path);
       const checksum = this.fileService.calculateChecksum(buffer);
 
-      // Upload file to storage
       const fileName = `bundle-${platform}-${version}-${Date.now()}${require("path").extname(
         req.file!.originalname
       )}`;
       const downloadUrl = await this.fileService.uploadFile(fileName, buffer);
 
-      // Insert update record into database
       const updateRecord: Omit<UpdateRecord, "id"> = {
         platform: platform as any,
         version,
@@ -94,6 +100,7 @@ class AdminController {
         platform,
         fileName,
         downloadUrl,
+        recordId: insertedRecord[0]?.id,
       });
 
       res.json({
@@ -104,7 +111,15 @@ class AdminController {
         record: insertedRecord[0],
       });
     } catch (error) {
-      logger.error("Bundle upload failed", { error });
+      logger.error("Bundle upload failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        version: req.body.version,
+        platform: req.body.platform,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+        file: req.file ? req.file.originalname : undefined,
+      });
       if (error instanceof ValidationError) {
         res.status(error.statusCode).json({ error: error.message });
       } else {
@@ -122,52 +137,45 @@ class AdminController {
    */
   async getDashboardStats(req: Request, res: Response): Promise<void> {
     try {
-      console.log("=== DASHBOARD STATS - START ===");
+      logger.info("Fetching dashboard statistics", {
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
 
-      // Get total bundles count
-      console.log("Step 1: Fetching total bundles count");
       const bundlesResult = await this.supabaseService.query("updates", {
         select: "*",
-        count: "exact"
+        count: "exact",
       });
-      
-      console.log("Bundles result:", bundlesResult);
-      const totalBundles = bundlesResult.count || 0;
-      console.log("Bundles count:", totalBundles);
 
-      // Get active devices count (unique device_ids)
-      console.log("Step 2: Fetching active devices");
-      const devicesResult = await this.supabaseService.query("device_channels", {
-        select: "device_id",
-        order: { column: "updated_at" }
-      });
-      
-      console.log("Devices result:", devicesResult);
+      const totalBundles = bundlesResult.count || 0;
+
+      const devicesResult = await this.supabaseService.query(
+        "device_channels",
+        {
+          select: "device_id",
+          order: { column: "updated_at" },
+        }
+      );
+
       const activeDevices = devicesResult.data
         ? new Set(devicesResult.data.map((d: any) => d.device_id)).size
         : 0;
 
-      // Get active channels count (unique channels)
-      console.log("Step 3: Fetching active channels");
       const channelsResult = await this.supabaseService.query("updates", {
         select: "channel",
-        order: { column: "created_at" }
+        order: { column: "created_at" },
       });
-      
-      console.log("Channels result:", channelsResult);
+
       const activeChannels = channelsResult.data
         ? new Set(channelsResult.data.map((c: any) => c.channel)).size
         : 0;
 
-      // Get total downloads (downloaded stats)
-      console.log("Step 4: Fetching total downloads");
       const downloadsResult = await this.supabaseService.query("update_stats", {
         select: "*",
         count: "exact",
-        eq: { status: "downloaded" }
+        eq: { status: "downloaded" },
       });
-      
-      console.log("Downloads result:", downloadsResult);
+
       const totalDownloads = downloadsResult.count || 0;
 
       const stats: DashboardStatsResponse = {
@@ -177,15 +185,15 @@ class AdminController {
         totalDownloads,
       };
 
-      console.log("=== DASHBOARD STATS - SUCCESS ===", stats);
+      logger.info("Dashboard stats fetched successfully", stats);
       res.json(stats);
     } catch (error) {
-      console.error("=== DASHBOARD STATS - ERROR ===", error);
-      logger.error(
-        `Dashboard stats fetch failed - ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      logger.error("Dashboard stats fetch failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       res.status(500).json({
         error: "Failed to fetch dashboard statistics",
         details: error instanceof Error ? error.message : String(error),
@@ -275,22 +283,22 @@ class AdminController {
    */
   async getChannels(req: Request, res: Response): Promise<void> {
     try {
-      // Get all unique channels with their details
       const updatesResult = await this.supabaseService.query("updates", {
         select: "channel, platform, environment, created_at",
       });
 
-      // Get device counts
-      const allChannelsResult = await this.supabaseService.query("device_channels", {
-        select: "channel"
-      });
+      const allChannelsResult = await this.supabaseService.query(
+        "device_channels",
+        {
+          select: "channel",
+        }
+      );
 
       const channelCounts: { [key: string]: number } = {};
       (allChannelsResult.data || []).forEach((item: any) => {
         channelCounts[item.channel] = (channelCounts[item.channel] || 0) + 1;
       });
 
-      // Create channel map
       const channelMap: { [key: string]: any } = {};
       (updatesResult.data || []).forEach((update: any) => {
         if (!channelMap[update.channel]) {
@@ -308,7 +316,6 @@ class AdminController {
         channelMap[update.channel].environments.add(update.environment);
       });
 
-      // Add device counts
       Object.entries(channelCounts).forEach(([channel, count]) => {
         if (channelMap[channel]) {
           channelMap[channel].device_count = count;
@@ -342,16 +349,16 @@ class AdminController {
         order: { column: "updated_at", ascending: false },
       });
 
-      // Process data to match expected format
-      const processedDevices = result.data?.map((device: any) => ({
-        id: device.id,
-        device_id: device.device_id,
-        app_id: device.app_id,
-        platform: device.platform,
-        channel: device.channel,
-        updated_at: device.updated_at,
-        last_version: "Unknown", // Would need separate query
-      })) || [];
+      const processedDevices =
+        result.data?.map((device: any) => ({
+          id: device.id,
+          device_id: device.device_id,
+          app_id: device.app_id,
+          platform: device.platform,
+          channel: device.channel,
+          updated_at: device.updated_at,
+          last_version: "Unknown", // Would need separate query
+        })) || [];
 
       res.json(processedDevices);
     } catch (error) {
@@ -437,7 +444,6 @@ class AdminController {
     try {
       const { id } = req.params;
 
-      // Delete all bundles associated with this channel
       await this.supabaseService.delete("updates", { channel: id });
       res.status(204).send();
     } catch (error) {
@@ -454,5 +460,4 @@ class AdminController {
   }
 }
 
-// Export singleton instance
 export default new AdminController(fileService, supabaseService);

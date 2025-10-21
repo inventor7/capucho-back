@@ -10,7 +10,6 @@ class SupabaseService implements ISupabaseService {
   constructor() {
     this.client = createClient(config.supabase.url, config.supabase.key);
 
-    // Use service role key for storage operations if available
     this.storageClient = createClient(
       config.supabase.url,
       config.supabase.serviceKey || config.supabase.key
@@ -28,14 +27,12 @@ class SupabaseService implements ISupabaseService {
     console.log("Options:", JSON.stringify(options, null, 2));
 
     try {
-      // Handle count queries separately
       if (options.count) {
         console.log("Executing COUNT query");
         let countQuery = this.client
           .from(table)
           .select(options.select || "*", { count: options.count, head: true });
 
-        // Apply filters
         if (options.match && Object.keys(options.match).length > 0) {
           console.log("Applying match filter:", options.match);
           countQuery = countQuery.match(options.match);
@@ -77,11 +74,9 @@ class SupabaseService implements ISupabaseService {
         return { data: null, count };
       }
 
-      // Regular query
       console.log("Executing REGULAR query");
       let queryBuilder = this.client.from(table).select(options.select || "*");
 
-      // Apply filters
       if (options.match && Object.keys(options.match).length > 0) {
         console.log("Applying match filter:", options.match);
         queryBuilder = queryBuilder.match(options.match);
@@ -101,14 +96,12 @@ class SupabaseService implements ISupabaseService {
         });
       }
 
-      // Apply ordering
       if (!options.count && options.order?.column) {
         queryBuilder = queryBuilder.order(options.order.column, {
           ascending: options.order.ascending !== false,
         });
       }
 
-      // Apply limit
       if (!options.count) {
         queryBuilder = queryBuilder.limit(options.limit || 100);
       }
@@ -177,7 +170,6 @@ class SupabaseService implements ISupabaseService {
     try {
       let query = this.client.from(table).update(data);
 
-      // Apply filters
       Object.entries(filter).forEach(([key, value]) => {
         query = query.eq(key, value);
       });
@@ -205,7 +197,6 @@ class SupabaseService implements ISupabaseService {
     try {
       let query = this.client.from(table).delete();
 
-      // Apply filters
       Object.entries(filter).forEach(([key, value]) => {
         query = query.eq(key, value);
       });
@@ -224,14 +215,13 @@ class SupabaseService implements ISupabaseService {
     }
   }
 
-  // Storage operations
   async uploadFile(
     fileName: string,
     buffer: Buffer,
     contentType: string = "application/zip"
   ): Promise<string> {
     try {
-      const { data, error } = await this.storageClient.storage
+      const { error } = await this.storageClient.storage
         .from(config.supabase.bucketName)
         .upload(fileName, buffer, {
           contentType,
@@ -243,7 +233,6 @@ class SupabaseService implements ISupabaseService {
         throw new DatabaseError(`File upload failed: ${error.message}`);
       }
 
-      // Get public URL
       const { data: urlData } = this.storageClient.storage
         .from(config.supabase.bucketName)
         .getPublicUrl(fileName);
@@ -259,13 +248,9 @@ class SupabaseService implements ISupabaseService {
     }
   }
 
-  // Health check
   async healthCheck(): Promise<boolean> {
     try {
-      const { data, error } = await this.client
-        .from("updates")
-        .select("id")
-        .limit(1);
+      const { error } = await this.client.from("updates").select("id").limit(1);
 
       return !error;
     } catch (error) {
@@ -274,7 +259,6 @@ class SupabaseService implements ISupabaseService {
     }
   }
 
-  // Get client instances for advanced operations
   getClient(): SupabaseClient {
     return this.client;
   }
@@ -284,5 +268,4 @@ class SupabaseService implements ISupabaseService {
   }
 }
 
-// Export singleton instance
 export default new SupabaseService();

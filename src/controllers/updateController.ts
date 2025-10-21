@@ -11,38 +11,57 @@ class UpdateController {
     private fileService: any
   ) {}
 
-  // Check for available updates
   checkForUpdate = async (req: Request, res: Response): Promise<void> => {
     try {
       const request = req.body;
-      logger.info("Checking for updates", { request });
+      logger.info("Checking for updates", {
+        request,
+        params: req.params,
+        query: req.query,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
 
       const result = await this.updateService.checkForUpdate(request);
       res.json(result);
     } catch (error) {
-      logger.error("Error checking for updates", error);
+      logger.error("Error checking for updates", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        request: req.body,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       res.status(500).json({ error: "Internal server error" });
     }
   };
 
-  // Get all available updates
   getAllUpdates = async (req: Request, res: Response): Promise<void> => {
     try {
       const query = req.query as any;
-      logger.info("Getting all updates", { query });
+      logger.info("Getting all updates", {
+        query,
+        params: req.params,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
 
       const result = await this.updateService.getAllUpdates(query);
       res.json(result);
     } catch (error) {
-      logger.error("Error getting all updates", error);
+      logger.error("Error getting all updates", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        query: req.query,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       res.status(500).json({ error: "Internal server error" });
     }
   };
 
-  // Get builtin version (not implemented in service, return empty)
   getBuiltinVersion = async (req: Request, res: Response): Promise<void> => {
     try {
-      // Return empty object as per original behavior
       res.json({});
     } catch (error) {
       logger.error("Error getting builtin version", error);
@@ -50,26 +69,38 @@ class UpdateController {
     }
   };
 
-  // Download update bundle
   downloadUpdate = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      logger.info("Downloading update", { id });
+      logger.info("Downloading update", {
+        id,
+        params: req.params,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
 
-      // This would need to be implemented in the service
-      // For now, return not found
       res.status(404).json({ error: "Update not found" });
     } catch (error) {
-      logger.error("Error downloading update", error);
+      logger.error("Error downloading update", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id: req.params.id,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       res.status(500).json({ error: "Internal server error" });
     }
   };
 
-  // Log download completed
   logDownloadCompleted = async (req: Request, res: Response): Promise<void> => {
     try {
       const stats = req.body;
-      logger.info("Logging download completed", { stats });
+      logger.info("Logging download completed", {
+        stats,
+        params: req.params,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
 
       await this.updateService.logStats({
         ...stats,
@@ -78,16 +109,26 @@ class UpdateController {
 
       res.json({ success: true });
     } catch (error) {
-      logger.error("Error logging download completed", error);
+      logger.error("Error logging download completed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        stats: req.body,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       res.status(500).json({ error: "Internal server error" });
     }
   };
 
-  // Log update applied
   logUpdateApplied = async (req: Request, res: Response): Promise<void> => {
     try {
       const stats = req.body;
-      logger.info("Logging update applied", { stats });
+      logger.info("Logging update applied", {
+        stats,
+        params: req.params,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
 
       await this.updateService.logStats({
         ...stats,
@@ -96,16 +137,26 @@ class UpdateController {
 
       res.json({ success: true });
     } catch (error) {
-      logger.error("Error logging update applied", error);
+      logger.error("Error logging update applied", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        stats: req.body,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       res.status(500).json({ error: "Internal server error" });
     }
   };
 
-  // Log update failed
   logUpdateFailed = async (req: Request, res: Response): Promise<void> => {
     try {
       const stats = req.body;
-      logger.info("Logging update failed", { stats });
+      logger.info("Logging update failed", {
+        stats,
+        params: req.params,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
 
       await this.updateService.logStats({
         ...stats,
@@ -114,15 +165,22 @@ class UpdateController {
 
       res.json({ success: true });
     } catch (error) {
-      logger.error("Error logging update failed", error);
+      logger.error("Error logging update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        stats: req.body,
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
       res.status(500).json({ error: "Internal server error" });
     }
   };
 }
 
-const updateController = new UpdateController(updateService, supabaseService, fileService);
+const updateController = new UpdateController(
+  updateService,
+  supabaseService,
+  fileService
+);
 
 export default updateController;
-
-// Export class for testing
-export { UpdateController };

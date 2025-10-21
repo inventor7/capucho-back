@@ -32,7 +32,6 @@ class UpdateService implements IUpdateService {
           deviceId: request.deviceId,
         });
 
-        // Log update check for analytics
         if (request.deviceId) {
           await supabaseService.insert("update_logs", [
             {
@@ -124,7 +123,6 @@ class UpdateService implements IUpdateService {
     platform: string;
   }): Promise<void> {
     try {
-      // Check if device already has an assignment
       const existing = await supabaseService.query("device_channels", {
         match: {
           app_id: assignment.appId,
@@ -133,7 +131,6 @@ class UpdateService implements IUpdateService {
       });
 
       if (existing && existing.length > 0) {
-        // Update existing assignment
         await supabaseService.update(
           "device_channels",
           {
@@ -144,7 +141,6 @@ class UpdateService implements IUpdateService {
           { id: existing[0].id }
         );
       } else {
-        // Create new assignment
         await supabaseService.insert("device_channels", [
           {
             app_id: assignment.appId,
@@ -212,5 +208,4 @@ class UpdateService implements IUpdateService {
   }
 }
 
-// Export singleton instance
 export default new UpdateService();

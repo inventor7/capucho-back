@@ -3,23 +3,11 @@ import { HealthResponse, ISupabaseService } from "@/types";
 import supabaseService from "@/services/supabaseService";
 import logger from "@/utils/logger";
 
-/**
- * Controller for handling health check operations
- */
 class HealthController {
-  /**
-   * Creates an instance of HealthController
-   * @param supabaseService - Service for database operations
-   */
   constructor(private readonly supabaseService: ISupabaseService) {}
 
-  /**
-   * Health check for the update service
-   * GET /api/health
-   */
   async healthCheck(req: Request, res: Response): Promise<void> {
     try {
-      // Test database connection
       const dbHealthy = await this.testDatabaseConnection();
 
       const response: HealthResponse = dbHealthy
@@ -50,10 +38,6 @@ class HealthController {
     }
   }
 
-  /**
-   * Basic health check
-   * GET /health
-   */
   async basicHealthCheck(req: Request, res: Response): Promise<void> {
     res.json({
       status: "OK",
@@ -61,12 +45,9 @@ class HealthController {
     });
   }
 
-  /**
-   * Test database connection
-   */
   private async testDatabaseConnection(): Promise<boolean> {
     try {
-      const result = await this.supabaseService.query("updates", {
+      await this.supabaseService.query("updates", {
         select: "id",
         limit: 1,
       });
@@ -78,5 +59,4 @@ class HealthController {
   }
 }
 
-// Export singleton instance
 export default new HealthController(supabaseService);

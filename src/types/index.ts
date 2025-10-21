@@ -200,7 +200,6 @@ export interface IFileService {
   createMulterUpload(): any; // Multer upload middleware
 }
 
-// Configuration types
 export interface AppConfig {
   port: number;
   environment: Environment;
@@ -226,7 +225,6 @@ export interface AppConfig {
   };
 }
 
-// Error types
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly isOperational: boolean;
@@ -240,7 +238,6 @@ export class AppError extends Error {
     this.statusCode = statusCode;
     this.isOperational = isOperational;
 
-    // Safe call for Node.js environments
     if (typeof Error.captureStackTrace === "function") {
       Error.captureStackTrace(this, this.constructor);
     }

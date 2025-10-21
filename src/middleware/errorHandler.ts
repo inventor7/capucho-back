@@ -7,24 +7,20 @@ import {
 } from "@/types";
 import logger from "@/utils/logger";
 
-// Error handling middleware
 export const errorHandler = (
   error: Error,
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): void => {
   let statusCode = 500;
   let message = "Internal server error";
   let isOperational = false;
 
-  // Handle known error types
   if (error instanceof AppError) {
     statusCode = error.statusCode;
     message = error.message;
     isOperational = error.isOperational;
 
-    // Log operational errors as warnings
     if (isOperational) {
       logger.warn("Operational error", {
         error: message,
@@ -32,6 +28,10 @@ export const errorHandler = (
         path: req.path,
         method: req.method,
         ip: req.ip,
+        userAgent: req.get("User-Agent"),
+        body: req.body,
+        params: req.params,
+        query: req.query,
       });
     }
   } else if (error instanceof ValidationError) {
@@ -45,7 +45,6 @@ export const errorHandler = (
     message = "Database operation failed";
   }
 
-  // Log unexpected errors
   if (!isOperational) {
     logger.error("Unexpected error", {
       error: error.message,
@@ -54,10 +53,12 @@ export const errorHandler = (
       method: req.method,
       ip: req.ip,
       userAgent: req.get("User-Agent"),
+      body: req.body,
+      params: req.params,
+      query: req.query,
     });
   }
 
-  // Send error response
   res.status(statusCode).json({
     error: message,
     ...(process.env.NODE_ENV === "development" && {
@@ -67,7 +68,6 @@ export const errorHandler = (
   });
 };
 
-// 404 handler
 export const notFoundHandler = (
   req: Request,
   res: Response,
@@ -77,7 +77,6 @@ export const notFoundHandler = (
   next(error);
 };
 
-// Async error wrapper
 export const asyncHandler =
   (fn: Function) => (req: Request, res: Response, next: NextFunction) =>
     Promise.resolve(fn(req, res, next)).catch(next);
