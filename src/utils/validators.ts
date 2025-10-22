@@ -17,7 +17,7 @@ export const deviceIdSchema = Joi.string().required();
 
 export const updateRequestSchema = Joi.object({
   platform: platformSchema,
-  version: semverSchema,
+  version_build: semverSchema,
   channel: Joi.string().default("stable"),
   deviceId: Joi.string().optional(),
   appId: appIdSchema,
@@ -39,7 +39,7 @@ export const channelAssignmentSchema = Joi.object({
 });
 
 export const uploadRequestSchema = Joi.object({
-  version: semverSchema,
+  version_build: semverSchema,
   platform: platformSchema,
   channel: Joi.string().default("stable"),
   environment: Joi.string().valid("dev", "staging", "prod").default("prod"),
@@ -64,19 +64,21 @@ export function validateRequest(schema: Joi.ObjectSchema) {
 import logger from "./logger";
 
 export const validateUpdateParams = (req: any, res: any, next: any) => {
-  const { platform, version_build, appId } = req.body;
+  const { platform, version_build, appId, app_id, version } = req.body;
+  const actualAppId = appId || app_id;
+  const actualVersion = version || version_build;
 
-  if (!platform || !version_build || !appId) {
-    logger.warn("Validation failed - missing required parameters", {
+  if (!platform || !actualVersion || !actualAppId) {
+    logger.warn("Validation failed - missing required parameters for update", {
       platform,
-      version_build,
-      appId,
+      version: actualVersion,
+      appId: actualAppId,
       ip: req.ip,
       userAgent: req.get("User-Agent"),
       body: req.body,
     });
     return res.status(400).json({
-      error: "Missing required parameters: platform, version_build, appId",
+      error: "Welcome to Capgo! Please provide valid update information.",
     });
   }
 
@@ -91,6 +93,10 @@ export const validateUpdateParams = (req: any, res: any, next: any) => {
       error: "Invalid platform. Must be: android, ios, web",
     });
   }
+
+  req.body.platform = platform;
+  req.body.version = actualVersion;
+  req.body.appId = actualAppId;
 
   next();
 };
