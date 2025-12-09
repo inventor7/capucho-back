@@ -142,6 +142,29 @@ class NativeUpdateController {
 
       await this.supabaseService.insert("native_update_logs", [logRecord]);
 
+      // Also register the device in device_channels if it doesn't exist
+      // This ensures the device appears in the dashboard
+      if (device_id && req.body.appId && logRecord.platform) {
+        const existing = await this.supabaseService.query("device_channels", {
+          match: {
+            app_id: req.body.appId,
+            device_id: device_id,
+          },
+        });
+
+        if (!existing.data || existing.data.length === 0) {
+          await this.supabaseService.insert("device_channels", [
+            {
+              app_id: req.body.appId,
+              device_id: device_id,
+              channel: logRecord.channel || "stable",
+              platform: logRecord.platform,
+              updated_at: new Date().toISOString(),
+            },
+          ]);
+        }
+      }
+
       logger.info("Native update event logged", { event, platform, device_id });
 
       res.json({ success: true });

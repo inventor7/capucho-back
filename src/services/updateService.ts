@@ -36,6 +36,7 @@ class UpdateService implements IUpdateService {
         });
 
         if (request.deviceId) {
+          // Log the update event
           await supabaseService.insert("update_logs", [
             {
               device_id: request.deviceId,
@@ -46,6 +47,27 @@ class UpdateService implements IUpdateService {
               timestamp: new Date().toISOString(),
             },
           ]);
+
+          // Also register the device in device_channels if it doesn't exist
+          // This ensures the device appears in the dashboard even if it hasn't explicitly assigned a channel
+          const existing = await supabaseService.query("device_channels", {
+            match: {
+              app_id: request.appId,
+              device_id: request.deviceId,
+            },
+          });
+
+          if (!existing.data || existing.data.length === 0) {
+            await supabaseService.insert("device_channels", [
+              {
+                app_id: request.appId,
+                device_id: request.deviceId,
+                channel: channelToUse, // Use the same channel that's being checked
+                platform: request.platform,
+                updated_at: new Date().toISOString(),
+              },
+            ]);
+          }
         }
 
         return {
@@ -112,6 +134,27 @@ class UpdateService implements IUpdateService {
         },
       ]);
 
+      // Also register the device in device_channels if it doesn't exist
+      // This ensures the device appears in the dashboard
+      const existing = await supabaseService.query("device_channels", {
+        match: {
+          app_id: stats.appId,
+          device_id: stats.deviceId,
+        },
+      });
+
+      if (!existing.data || existing.data.length === 0) {
+        await supabaseService.insert("device_channels", [
+          {
+            app_id: stats.appId,
+            device_id: stats.deviceId,
+            channel: "stable", // Default to stable channel if no specific channel
+            platform: stats.platform,
+            updated_at: new Date().toISOString(),
+          },
+        ]);
+      }
+
       logger.info("Stats logged", { stats });
     } catch (error) {
       logger.error("Failed to log stats", { stats, error });
@@ -133,7 +176,7 @@ class UpdateService implements IUpdateService {
         },
       });
 
-      if (existing && existing.length > 0) {
+      if (existing.data && existing.data.length > 0) {
         await supabaseService.update(
           "device_channels",
           {
@@ -141,7 +184,7 @@ class UpdateService implements IUpdateService {
             platform: assignment.platform,
             updated_at: new Date().toISOString(),
           },
-          { id: existing[0].id }
+          { id: existing.data[0].id }
         );
       } else {
         await supabaseService.insert("device_channels", [
