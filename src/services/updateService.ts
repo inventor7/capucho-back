@@ -12,8 +12,12 @@ class UpdateService implements IUpdateService {
     try {
       logger.info("Checking for updates", { request });
 
+      // Get channel - plugin sends defaultChannel (camelCase) or default_channel (snake_case)
       const channelToUse =
-        request.channel || request.defaultChannel || "stable";
+        request.channel ||
+        request.defaultChannel ||
+        (request as any).default_channel ||
+        "staging";
 
       // Parse user's native version (version_code from plugin, not version_build)
       const userNativeVersion =
