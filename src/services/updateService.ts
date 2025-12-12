@@ -15,14 +15,26 @@ class UpdateService implements IUpdateService {
       const channelToUse =
         request.channel || request.defaultChannel || "stable";
 
-      // Parse user's native version (version_build from plugin)
-      const userNativeVersion = parseInt(request.versionBuild || "0") || 0;
+      // Parse user's native version (version_code from plugin, not version_build)
+      const userNativeVersion =
+        parseInt(request.versionCode || request.versionBuild || "0") || 0;
 
+      // Normalize version - "builtin" means user has no OTA bundle, treat as 0.0.0
+      const currentVersion =
+        request.version === "builtin" ? "0.0.0" : request.version || "0.0.0";
+
+      logger.info("Normalized request", {
+        originalVersion: request.version,
+        normalizedVersion: currentVersion,
+        userNativeVersion,
+        channel: channelToUse,
+      });
+
+      // Get latest active update for this platform/channel
       const updates = await supabaseService.query("updates", {
         select:
           "version, download_url, checksum, session_key, min_native_version",
         eq: { platform: request.platform },
-        gt: { version: request.version },
         match: {
           environment: process.env.ENVIRONMENT || "prod",
           channel: channelToUse,
@@ -34,6 +46,18 @@ class UpdateService implements IUpdateService {
 
       if (updates && updates.data && updates.data.length > 0) {
         const latestUpdate = updates.data[0];
+
+        // Compare versions - check if latest is actually newer than current
+        const isNewer =
+          this.compareVersions(latestUpdate.version, currentVersion) > 0;
+
+        if (!isNewer) {
+          logger.info("No update needed - already on latest version", {
+            currentVersion,
+            latestAvailable: latestUpdate.version,
+          });
+          return { message: "No update available" };
+        }
 
         // Check if user's native version meets the minimum requirement
         const minNativeRequired = latestUpdate.min_native_version || 0;
@@ -323,6 +347,28 @@ class UpdateService implements IUpdateService {
       // If signing fails, return the original URL
       return downloadUrl;
     }
+  }
+
+  /**
+   * Compare two semantic version strings
+   * @returns positive if v1 > v2, negative if v1 < v2, 0 if equal
+   */
+  private compareVersions(v1: string, v2: string): number {
+    const parts1 = v1.split(".").map((p) => parseInt(p) || 0);
+    const parts2 = v2.split(".").map((p) => parseInt(p) || 0);
+
+    // Pad arrays to same length
+    const maxLen = Math.max(parts1.length, parts2.length);
+    while (parts1.length < maxLen) parts1.push(0);
+    while (parts2.length < maxLen) parts2.push(0);
+
+    for (let i = 0; i < maxLen; i++) {
+      const p1 = parts1[i] ?? 0;
+      const p2 = parts2[i] ?? 0;
+      if (p1 > p2) return 1;
+      if (p1 < p2) return -1;
+    }
+    return 0;
   }
 }
 

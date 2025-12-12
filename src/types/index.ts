@@ -14,7 +14,8 @@ export interface UpdateRequest {
   appId: string;
   defaultChannel?: Channel;
   // Additional fields from official Capgo spec
-  versionBuild?: string;
+  versionBuild?: string; // App version string (e.g., "1.0.0")
+  versionCode?: string; // Native build number (e.g., "54")
   isEmulator?: boolean;
   isProd?: boolean;
   pluginVersion?: string;
