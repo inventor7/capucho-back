@@ -36,7 +36,6 @@ class UpdateService implements IUpdateService {
           "version, download_url, checksum, session_key, min_native_version",
         eq: { platform: request.platform },
         match: {
-          environment: process.env.ENVIRONMENT || "prod",
           channel: channelToUse,
           active: true,
         },
