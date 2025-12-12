@@ -452,6 +452,210 @@ class AdminController {
     }
   }
 
+  // ============================================================
+  // Apps CRUD (NEW)
+  // ============================================================
+
+  /**
+   * Get all apps
+   * GET /api/dashboard/apps
+   */
+  async getApps(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await this.supabaseService.query("apps", {
+        select: "*",
+        order: { column: "created_at", ascending: false },
+      });
+      res.json(result.data || []);
+    } catch (error) {
+      logger.error("Apps fetch failed", { error });
+      // Return empty array if apps table doesn't exist yet
+      res.json([]);
+    }
+  }
+
+  /**
+   * Create a new app
+   * POST /api/dashboard/apps
+   */
+  async createApp(req: Request, res: Response): Promise<void> {
+    try {
+      const { app_id, name } = req.body;
+
+      if (!app_id) {
+        throw new ValidationError("app_id is required");
+      }
+
+      const result = await this.supabaseService.insert("apps", [
+        {
+          app_id,
+          name: name || app_id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+
+      res.status(201).json(result[0]);
+    } catch (error) {
+      logger.error("App creation failed", { error });
+      res.status(500).json({ error: "Failed to create app" });
+    }
+  }
+
+  /**
+   * Update an app
+   * PUT /api/dashboard/apps/:id
+   */
+  async updateApp(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+
+      const result = await this.supabaseService.update(
+        "apps",
+        { ...updateData, updated_at: new Date().toISOString() },
+        { id }
+      );
+
+      if (result.length === 0) {
+        throw new ValidationError("App not found");
+      }
+
+      res.json(result[0]);
+    } catch (error) {
+      logger.error("App update failed", { error });
+      if (error instanceof ValidationError) {
+        res.status(error.statusCode).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Failed to update app" });
+      }
+    }
+  }
+
+  /**
+   * Delete an app
+   * DELETE /api/dashboard/apps/:id
+   */
+  async deleteApp(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      await this.supabaseService.delete("apps", { id });
+      res.status(204).send();
+    } catch (error) {
+      logger.error("App deletion failed", { error });
+      res.status(500).json({ error: "Failed to delete app" });
+    }
+  }
+
+  // ============================================================
+  // Channels CRUD (Enhanced)
+  // ============================================================
+
+  /**
+   * Create a new channel
+   * POST /api/dashboard/channels
+   */
+  async createChannel(req: Request, res: Response): Promise<void> {
+    try {
+      const {
+        app_id,
+        name,
+        public: isPublic,
+        allow_device_self_set,
+        ios,
+        android,
+      } = req.body;
+
+      if (!app_id || !name) {
+        throw new ValidationError("app_id and name are required");
+      }
+
+      const result = await this.supabaseService.insert("channels", [
+        {
+          app_id,
+          name,
+          public: isPublic ?? false,
+          allow_device_self_set: allow_device_self_set ?? false,
+          ios: ios ?? true,
+          android: android ?? true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+
+      res.status(201).json(result[0]);
+    } catch (error) {
+      logger.error("Channel creation failed", { error });
+      res.status(500).json({ error: "Failed to create channel" });
+    }
+  }
+
+  /**
+   * Update a channel
+   * PUT /api/dashboard/channels/:id
+   */
+  async updateChannel(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+
+      const result = await this.supabaseService.update(
+        "channels",
+        { ...updateData, updated_at: new Date().toISOString() },
+        { id }
+      );
+
+      if (result.length === 0) {
+        throw new ValidationError("Channel not found");
+      }
+
+      res.json(result[0]);
+    } catch (error) {
+      logger.error("Channel update failed", { error });
+      if (error instanceof ValidationError) {
+        res.status(error.statusCode).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Failed to update channel" });
+      }
+    }
+  }
+
+  // ============================================================
+  // Update Logs (NEW)
+  // ============================================================
+
+  /**
+   * Get update logs
+   * GET /api/dashboard/update-logs
+   * Supports query params: ?app_id=...&device_id=...&limit=100
+   */
+  async getUpdateLogs(req: Request, res: Response): Promise<void> {
+    try {
+      const { app_id, device_id, limit = 100 } = req.query;
+
+      const queryOptions: any = {
+        select: "*",
+        order: { column: "timestamp", ascending: false },
+        limit: parseInt(limit as string) || 100,
+      };
+
+      if (app_id || device_id) {
+        queryOptions.match = {};
+        if (app_id) queryOptions.match.app_id = app_id;
+        if (device_id) queryOptions.match.device_id = device_id;
+      }
+
+      const result = await this.supabaseService.query(
+        "update_logs",
+        queryOptions
+      );
+      res.json(result.data || []);
+    } catch (error) {
+      logger.error("Update logs fetch failed", { error });
+      res.json([]);
+    }
+  }
+
   /**
    * Get multer upload middleware
    */

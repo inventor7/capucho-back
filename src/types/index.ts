@@ -13,21 +13,61 @@ export interface UpdateRequest {
   deviceId?: string;
   appId: string;
   defaultChannel?: Channel;
+  // Additional fields from official Capgo spec
+  versionBuild?: string;
+  isEmulator?: boolean;
+  isProd?: boolean;
+  pluginVersion?: string;
 }
 
+/**
+ * Official Capgo update response format
+ */
 export interface UpdateResponse {
   version?: string;
   url?: string;
   checksum?: string;
   sessionKey?: string;
+  /** Manifest for multi-file downloads */
+  manifest?: ManifestEntry[];
+  /** Error message if update check failed */
+  error?: string;
+  /** Message for client */
+  message?: string;
 }
 
+/**
+ * Manifest entry for multi-file bundle downloads
+ */
+export interface ManifestEntry {
+  file_name: string;
+  file_hash: string;
+  /** File download URL (optional if included in bundle) */
+  download_url?: string;
+}
+
+/**
+ * Official Capgo stats request format
+ * Note: Plugin sends 'action', legacy code uses 'status' - both are supported
+ */
 export interface StatsRequest {
-  bundleId: string;
-  status: string;
+  /** Action type (official Capgo field) */
+  action?: string;
+  /** Status (legacy field, same as action) */
+  status?: string;
+  /** Bundle ID (optional, not always sent by plugin) */
+  bundleId?: string;
   deviceId: string;
   appId: string;
   platform: Platform;
+  /** Version info */
+  version?: string;
+  versionBuild?: string;
+  /** Device state */
+  isEmulator?: boolean;
+  isProd?: boolean;
+  /** Old version for upgrade tracking */
+  oldVersionName?: string;
 }
 
 export interface ChannelAssignmentRequest {
@@ -35,14 +75,39 @@ export interface ChannelAssignmentRequest {
   deviceId: string;
   appId: string;
   platform: Platform;
+  version?: string;
+  versionBuild?: string;
+  pluginVersion?: string;
+  isEmulator?: boolean;
+  isProd?: boolean;
 }
 
+/**
+ * Official Capgo channel response format
+ */
 export interface ChannelResponse {
   channel: Channel;
+  /** Status: "default" or "override" */
+  status?: "default" | "override";
+  /** Whether device can self-assign to channels */
+  allowSet?: boolean;
 }
 
+/**
+ * Channels list response
+ */
 export interface ChannelsResponse {
-  channels: Channel[];
+  channels: ChannelInfo[];
+}
+
+/**
+ * Channel info in list response
+ */
+export interface ChannelInfo {
+  id: string;
+  name: string;
+  public?: boolean;
+  allow_self_set?: boolean;
 }
 
 export interface UploadRequest {

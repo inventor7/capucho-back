@@ -15,8 +15,12 @@ class UpdateService implements IUpdateService {
       const channelToUse =
         request.channel || request.defaultChannel || "stable";
 
+      // Parse user's native version (version_build from plugin)
+      const userNativeVersion = parseInt(request.versionBuild || "0") || 0;
+
       const updates = await supabaseService.query("updates", {
-        select: "version, download_url, checksum, session_key",
+        select:
+          "version, download_url, checksum, session_key, min_native_version",
         eq: { platform: request.platform },
         gt: { version: request.version },
         match: {
@@ -30,6 +34,24 @@ class UpdateService implements IUpdateService {
 
       if (updates && updates.data && updates.data.length > 0) {
         const latestUpdate = updates.data[0];
+
+        // Check if user's native version meets the minimum requirement
+        const minNativeRequired = latestUpdate.min_native_version || 0;
+
+        if (minNativeRequired > 0 && userNativeVersion < minNativeRequired) {
+          logger.info("OTA update requires newer native version", {
+            userNativeVersion,
+            requiredNativeVersion: minNativeRequired,
+            otaVersion: latestUpdate.version,
+          });
+
+          // Return message indicating native update needed first
+          return {
+            message: "native_update_required",
+            error: `Native version ${minNativeRequired} required. You have ${userNativeVersion}.`,
+          };
+        }
+
         logger.info("Update found", {
           version: latestUpdate.version,
           deviceId: request.deviceId,
@@ -44,12 +66,12 @@ class UpdateService implements IUpdateService {
               current_version: request.version,
               new_version: latestUpdate.version,
               platform: request.platform,
+              action: "get",
               timestamp: new Date().toISOString(),
             },
           ]);
 
           // Also register the device in device_channels if it doesn't exist
-          // This ensures the device appears in the dashboard even if it hasn't explicitly assigned a channel
           const existing = await supabaseService.query("device_channels", {
             match: {
               app_id: request.appId,
@@ -62,7 +84,7 @@ class UpdateService implements IUpdateService {
               {
                 app_id: request.appId,
                 device_id: request.deviceId,
-                channel: channelToUse, // Use the same channel that's being checked
+                channel: channelToUse,
                 platform: request.platform,
                 updated_at: new Date().toISOString(),
               },
@@ -116,17 +138,23 @@ class UpdateService implements IUpdateService {
   }
 
   async logStats(stats: {
-    bundleId: string;
-    status: string;
+    bundleId?: string;
+    status?: string;
+    action?: string;
     deviceId: string;
     appId: string;
     platform: string;
+    version?: string;
   }): Promise<void> {
     try {
+      // Accept both 'action' (official) and 'status' (legacy)
+      const actionOrStatus = stats.action || stats.status || "unknown";
+
       await supabaseService.insert("update_stats", [
         {
-          bundle_id: stats.bundleId,
-          status: stats.status,
+          bundle_id: stats.bundleId || stats.version || "unknown",
+          status: actionOrStatus,
+          action: actionOrStatus,
           device_id: stats.deviceId,
           app_id: stats.appId,
           platform: stats.platform,
@@ -232,7 +260,14 @@ class UpdateService implements IUpdateService {
   async getAvailableChannels(query: {
     appId: string;
     platform: string;
-  }): Promise<{ channels: string[] }> {
+  }): Promise<{
+    channels: {
+      id: string;
+      name: string;
+      public?: boolean;
+      allow_self_set?: boolean;
+    }[];
+  }> {
     try {
       const result = await supabaseService.query("updates", {
         select: "channel",
@@ -243,9 +278,18 @@ class UpdateService implements IUpdateService {
         },
       });
 
-      const channels = [
+      // Get unique channels and format as ChannelInfo
+      const uniqueChannels = [
         ...new Set((result.data || []).map((item: any) => item.channel)),
       ] as string[];
+
+      const channels = uniqueChannels.map((ch) => ({
+        id: ch,
+        name: ch,
+        public: true,
+        allow_self_set: true,
+      }));
+
       return { channels };
     } catch (error) {
       logger.error("Get available channels failed", { query, error });
