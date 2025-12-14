@@ -4,6 +4,8 @@ import channelController from "./channelController";
 import adminController from "./adminController";
 import healthController from "./healthController";
 import nativeUpdateController from "./nativeUpdateController";
+import authController from "./authController";
+import projectController from "./projectController";
 
 export {
   updateController,
@@ -12,4 +14,6 @@ export {
   adminController,
   healthController,
   nativeUpdateController,
+  authController,
+  projectController,
 };
