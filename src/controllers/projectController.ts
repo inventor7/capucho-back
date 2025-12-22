@@ -37,17 +37,9 @@ class ProjectController {
         // Table might not exist yet, fallback to defaults
       }
 
-      // 2. Flavors
-      // Mocked for now as per plan, but structured for future DB expansion
-      const flavors = [
-        { id: "default", name: "(Default)" },
-        // Add more mock flavors if needed or fetch from 'flavors' table
-      ];
-
       res.status(200).json({
         success: true,
         channels: channels.map((name) => ({ name, public: true })),
-        flavors,
       });
     } catch (error) {
       next(error);

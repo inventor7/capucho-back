@@ -3,6 +3,7 @@ import {
   UpdateRequest,
   UpdateResponse,
   UpdateRecord,
+  StatsRequest,
 } from "@/types";
 import supabaseService from "./supabaseService";
 import logger from "@/utils/logger";
@@ -51,10 +52,12 @@ class UpdateService implements IUpdateService {
 
       // Normalize version - "builtin" means user has no OTA bundle, treat as 0.0.0
       const currentVersion =
-        request.version === "builtin" ? "0.0.0" : request.version || "0.0.0";
+        request.version_name === "builtin"
+          ? "0.0.0"
+          : request.version_name || "0.0.0";
 
       logger.info("Normalized request", {
-        originalVersion: request.version,
+        originalVersion: request.version_name,
         normalizedVersion: currentVersion,
         userNativeVersion,
         channel: channelToUse,
@@ -135,7 +138,7 @@ class UpdateService implements IUpdateService {
       }
 
       logger.info("Update found", {
-        version: latestUpdate.version_name,
+        version_name: latestUpdate.version_name,
         deviceId: request.deviceId,
         channel: channelToUse,
       });
@@ -146,7 +149,7 @@ class UpdateService implements IUpdateService {
           {
             device_id: request.deviceId,
             app_id: appUuid,
-            current_version: request.version,
+            current_version: request.version_name,
             new_version: latestUpdate.version_name,
             platform: request.platform,
             action: "get",
@@ -176,7 +179,7 @@ class UpdateService implements IUpdateService {
       }
 
       return {
-        version: latestUpdate.version_name,
+        version_name: latestUpdate.version_name,
         url: await this.generateDownloadUrl(
           latestUpdate.external_url || latestUpdate.r2_path
         ),
@@ -200,7 +203,6 @@ class UpdateService implements IUpdateService {
     platform: string;
     appId: string;
     channel?: string;
-    environment?: string;
   }): Promise<{ updates: UpdateRecord[] }> {
     try {
       logger.info("Getting all updates", { query });
@@ -235,12 +237,11 @@ class UpdateService implements IUpdateService {
       if (error) throw error;
 
       const formattedUpdates: UpdateRecord[] = (data || []).map((v: any) => ({
-        version: v.version_name,
+        version_name: v.version_name,
         download_url: v.external_url || v.r2_path,
         checksum: v.checksum,
         session_key: v.session_key,
         channel: query.channel || "stable",
-        environment: (query.environment as any) || "prod",
         required: v.required,
         active: v.active,
         created_at: v.created_at,
@@ -254,15 +255,7 @@ class UpdateService implements IUpdateService {
     }
   }
 
-  async logStats(stats: {
-    bundleId?: string;
-    status?: string;
-    action?: string;
-    deviceId: string;
-    appId: string;
-    platform: string;
-    version?: string;
-  }): Promise<void> {
+  async logStats(stats: StatsRequest): Promise<void> {
     try {
       const appUuid = await this.resolveAppUuid(stats.appId);
       if (!appUuid) {
@@ -279,7 +272,7 @@ class UpdateService implements IUpdateService {
         {
           device_id: stats.deviceId,
           app_id: appUuid,
-          new_version: stats.bundleId || stats.version || "unknown",
+          new_version: stats.bundleId || stats.version_name || "unknown",
           action: actionOrStatus,
           platform: stats.platform,
           created_at: new Date().toISOString(),

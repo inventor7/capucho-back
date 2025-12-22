@@ -51,18 +51,19 @@ class AdminController {
     try {
       const {
         version,
+        version_name,
         platform,
         channel = "stable",
-        environment = "prod",
         required = false,
         app_id,
       } = req.body;
 
+      const finalVersion = version_name || version;
+
       logger.info("Upload bundle request received", {
-        version,
+        version: finalVersion,
         platform,
         channel,
-        environment,
         required,
         ip: req.ip,
         userAgent: req.get("User-Agent"),
@@ -77,7 +78,7 @@ class AdminController {
 
       await this.fileService.validateFile(req.file);
 
-      if (!version || !platform || !semver.valid(version)) {
+      if (!finalVersion || !platform || !semver.valid(finalVersion)) {
         throw new ValidationError(
           "Missing or invalid parameters: version, platform (semver required)"
         );
@@ -98,10 +99,25 @@ class AdminController {
         throw new ValidationError("Valid App ID is required");
       }
 
+      // Security Check: If API key is scoped to a specific app, ensure it matches
+      const keyAppId = (req as any).appId;
+      if (keyAppId && keyAppId !== appUuid) {
+        logger.warn("Security breach attempt: API key app scope mismatch", {
+          keyAppId,
+          targetAppUuid: appUuid,
+          userId: (req as any).user?.id,
+        });
+        res.status(403).json({
+          error: "Forbidden",
+          message: "This API key is restricted to another application.",
+        });
+        return;
+      }
+
       const buffer = req.file!.buffer;
       const checksum = this.fileService.calculateChecksum(buffer);
 
-      const fileName = `bundle-${platform}-${version}-${Date.now()}${require("path").extname(
+      const fileName = `bundle-${platform}-${finalVersion}-${Date.now()}${require("path").extname(
         req.file!.originalname
       )}`;
       const downloadUrl = await this.fileService.uploadFile(fileName, buffer);
@@ -109,7 +125,8 @@ class AdminController {
       const updateRecord: any = {
         app_id: appUuid,
         platform: platform as any,
-        version_name: version,
+        version_name: finalVersion,
+        channel: channel || "stable",
         external_url: downloadUrl,
         checksum,
         required: required === "true" || required === true,
@@ -128,7 +145,7 @@ class AdminController {
 
       res.json({
         success: true,
-        message: `Version ${version} uploaded successfully`,
+        message: `Version ${finalVersion} uploaded successfully`,
         downloadUrl,
         fileName,
         record: insertedRecord[0],
@@ -168,9 +185,19 @@ class AdminController {
       });
 
       // Resolve the app UUID from bundle identifier if provided
-      const appUuid = app_id
-        ? await this.resolveAppUuid(app_id as string)
-        : null;
+      let appUuid = app_id ? await this.resolveAppUuid(app_id as string) : null;
+
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId) {
+        if (appUuid && keyAppId !== appUuid) {
+          res
+            .status(403)
+            .json({ error: "Forbidden: API key restricted to another app" });
+          return;
+        }
+        appUuid = keyAppId;
+      }
 
       // If app_id was provided but not found, return zeroes
       if (app_id && !appUuid) {
@@ -243,11 +270,24 @@ class AdminController {
   async getBundles(req: Request, res: Response): Promise<void> {
     try {
       const { app_id } = req.query;
+      const { id } = req.params;
+
+      const identifier = (app_id as string) || id;
 
       // First resolve the app UUID from bundle identifier if provided
-      const appUuid = app_id
-        ? await this.resolveAppUuid(app_id as string)
-        : null;
+      let appUuid = identifier ? await this.resolveAppUuid(identifier) : null;
+
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId) {
+        if (appUuid && keyAppId !== appUuid) {
+          res
+            .status(403)
+            .json({ error: "Forbidden: API key restricted to another app" });
+          return;
+        }
+        appUuid = keyAppId;
+      }
 
       let query = this.supabaseService
         .getClient()
@@ -265,12 +305,11 @@ class AdminController {
       const bundles =
         (data || []).map((bundle: any) => ({
           id: bundle.id,
-          version: bundle.version_name,
+          version_name: bundle.version_name,
           download_url: bundle.external_url || bundle.r2_path,
           checksum: bundle.checksum,
           session_key: bundle.session_key,
-          channel: "stable", // Default for dashboard view, actual channel assignment is complex
-          environment: "prod", // Default for dashboard view
+          channel: bundle.channel || "stable",
           required: bundle.required,
           active: bundle.active,
           created_at: bundle.created_at,
@@ -356,25 +395,33 @@ class AdminController {
   async getChannels(req: Request, res: Response): Promise<void> {
     try {
       const { app_id } = req.query;
+      const { id } = req.params;
+
+      const identifier = (app_id as string) || id;
 
       // Resolve the app UUID from bundle identifier if provided
-      const appUuid = app_id
-        ? await this.resolveAppUuid(app_id as string)
-        : null;
+      let appUuid = identifier ? await this.resolveAppUuid(identifier) : null;
 
-      if (app_id && !appUuid) {
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId) {
+        if (appUuid && keyAppId !== appUuid) {
+          res
+            .status(403)
+            .json({ error: "Forbidden: API key restricted to another app" });
+          return;
+        }
+        appUuid = keyAppId;
+      }
+
+      if (identifier && !appUuid) {
         res.json([]);
         return;
       }
 
       // 1. Get channels from channels table
       let query = this.supabaseService.getClient().from("channels").select(`
-          id,
-          name,
-          ios_enabled,
-          android_enabled,
-          created_at,
-          current_version_id,
+          *,
           app_versions:current_version_id (
             version_name
           )
@@ -387,11 +434,13 @@ class AdminController {
       const { data: channelsData, error: channelsError } = await query;
       if (channelsError) throw channelsError;
 
-      // 2. Get device counts per channel_id
+      // 2. Get device counts and bundle counts per channel
       const channelIds = (channelsData || []).map((c: any) => c.id);
       const deviceCountsMap: Record<string, number> = {};
+      const bundleCountsMap: Record<string, number> = {};
 
       if (channelIds.length > 0) {
+        // Device counts
         const { data: devices } = await this.supabaseService
           .getClient()
           .from("device_channels")
@@ -402,22 +451,28 @@ class AdminController {
           deviceCountsMap[d.channel_id] =
             (deviceCountsMap[d.channel_id] || 0) + 1;
         });
+
+        // Bundle counts per channel name
+        const channelNames = (channelsData || []).map((c: any) => c.name);
+        const { data: bundles } = await this.supabaseService
+          .getClient()
+          .from("app_versions")
+          .select("channel")
+          .in("channel", channelNames);
+
+        (bundles || []).forEach((b: any) => {
+          const channelName = b.channel || "stable";
+          bundleCountsMap[channelName] =
+            (bundleCountsMap[channelName] || 0) + 1;
+        });
       }
 
       // 3. Format response for frontend
       const result = (channelsData || []).map((c: any) => {
-        const platforms = [];
-        if (c.ios_enabled) platforms.push("ios");
-        if (c.android_enabled) platforms.push("android");
-
         return {
-          id: c.id,
-          name: c.name,
-          platform: platforms[0] || "android",
-          app_id: app_id as string,
-          bundle_count: 0,
+          ...c,
+          bundle_count: bundleCountsMap[c.name] || 0,
           device_count: deviceCountsMap[c.id] || 0,
-          created_at: c.created_at,
           current_version: (c.app_versions as any)?.version_name || "None",
         };
       });
@@ -438,9 +493,19 @@ class AdminController {
       const { app_id } = req.query;
 
       // Resolve the app UUID from bundle identifier if provided
-      const appUuid = app_id
-        ? await this.resolveAppUuid(app_id as string)
-        : null;
+      let appUuid = app_id ? await this.resolveAppUuid(app_id as string) : null;
+
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId) {
+        if (appUuid && keyAppId !== appUuid) {
+          res
+            .status(403)
+            .json({ error: "Forbidden: API key restricted to another app" });
+          return;
+        }
+        appUuid = keyAppId;
+      }
 
       let query = this.supabaseService
         .getClient()
@@ -449,7 +514,8 @@ class AdminController {
           `
           *,
           channels:channel_id (
-            app_id
+            app_id,
+            name
           )
         `
         )
@@ -468,7 +534,7 @@ class AdminController {
           device_id: device.device_id,
           app_id: device.channels?.app_id || app_id,
           platform: device.platform,
-          channel: device.channel_id,
+          channel: device.channels?.name || "stable",
           updated_at: device.updated_at,
           last_version: "Unknown",
         })) || [];
@@ -489,9 +555,19 @@ class AdminController {
       const { app_id, range = "month" } = req.query;
 
       // Resolve the app UUID from bundle identifier if provided
-      const appUuid = app_id
-        ? await this.resolveAppUuid(app_id as string)
-        : null;
+      let appUuid = app_id ? await this.resolveAppUuid(app_id as string) : null;
+
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId) {
+        if (appUuid && keyAppId !== appUuid) {
+          res
+            .status(403)
+            .json({ error: "Forbidden: API key restricted to another app" });
+          return;
+        }
+        appUuid = keyAppId;
+      }
 
       // If app_id was provided but not found, return empty
       if (app_id && !appUuid) {
@@ -722,6 +798,57 @@ class AdminController {
     }
   }
 
+  /**
+   * Get a single channel by ID
+   * GET /api/dashboard/channels/:id
+   */
+  async getChannel(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+
+      const { data: channel, error } = await this.supabaseService
+        .getClient()
+        .from("channels")
+        .select(
+          `
+          *,
+          app_versions:current_version_id (
+            version_name
+          )
+        `
+        )
+        .eq("id", id)
+        .single();
+
+      if (error || !channel) {
+        throw new ValidationError("Channel not found");
+      }
+
+      // Get device count
+      const { count: deviceCount } = await this.supabaseService
+        .getClient()
+        .from("device_channels")
+        .select("*", { count: "exact", head: true })
+        .eq("channel_id", id);
+
+      const result = {
+        ...channel,
+        bundle_count: 0, // TODO
+        device_count: deviceCount || 0,
+        current_version: (channel.app_versions as any)?.version_name || "None",
+      };
+
+      res.json(result);
+    } catch (error) {
+      logger.error("Channel fetch failed", { error });
+      if (error instanceof ValidationError) {
+        res.status(error.statusCode).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Failed to fetch channel" });
+      }
+    }
+  }
+
   // ============================================================
   // Channels CRUD (Enhanced)
   // ============================================================
@@ -735,24 +862,31 @@ class AdminController {
       const {
         app_id,
         name,
-        public: isPublic,
+        is_public,
         allow_device_self_set,
-        ios,
-        android,
+        ios_enabled,
+        android_enabled,
       } = req.body;
 
       if (!app_id || !name) {
         throw new ValidationError("app_id and name are required");
       }
 
+      // Resolve the app UUID from bundle identifier if provided
+      const appUuid = await this.resolveAppUuid(app_id as string);
+
+      if (!appUuid) {
+        throw new ValidationError("Valid App ID is required");
+      }
+
       const result = await this.supabaseService.insert("channels", [
         {
-          app_id,
+          app_id: appUuid,
           name,
-          public: isPublic ?? false,
+          is_public: is_public ?? false,
           allow_device_self_set: allow_device_self_set ?? false,
-          ios: ios ?? true,
-          android: android ?? true,
+          ios_enabled: ios_enabled ?? true,
+          android_enabled: android_enabled ?? true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -760,7 +894,10 @@ class AdminController {
 
       res.status(201).json(result[0]);
     } catch (error) {
-      logger.error("Channel creation failed", { error });
+      logger.error("Channel creation failed", {
+        error: error instanceof Error ? error.message : String(error),
+        body: req.body,
+      });
       res.status(500).json({ error: "Failed to create channel" });
     }
   }
@@ -773,10 +910,16 @@ class AdminController {
     try {
       const { id } = req.params;
       const updateData = req.body;
+      const { app_id, ...sanitizedData } = updateData;
+
+      // Ensure empty UUID fields are null
+      if (sanitizedData.current_version_id === "") {
+        sanitizedData.current_version_id = null;
+      }
 
       const result = await this.supabaseService.update(
         "channels",
-        { ...updateData, updated_at: new Date().toISOString() },
+        { ...sanitizedData, updated_at: new Date().toISOString() },
         { id }
       );
 

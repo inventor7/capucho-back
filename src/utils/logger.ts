@@ -41,7 +41,7 @@ const customFormat = winston.format.printf((info) => {
 });
 
 const logger = winston.createLogger({
-  level: config.environment === "prod" ? "info" : "debug",
+  level: process.env.NODE_ENV === "production" ? "info" : "debug",
   levels,
   format: winston.format.combine(
     winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
@@ -50,7 +50,7 @@ const logger = winston.createLogger({
   ),
   transports: [
     new winston.transports.Console(),
-    ...(config.environment === "prod"
+    ...(process.env.NODE_ENV === "production"
       ? [
           new winston.transports.File({
             filename: "logs/error.log",

@@ -52,7 +52,18 @@ class OrganizationController {
 
       if (orgsResult.error) throw orgsResult.error;
 
-      res.json(orgsResult.data);
+      // 3. Merge roles into orgs
+      const orgsWithRoles = orgsResult.data.map((org: any) => {
+        const membership = membersResult.data.find(
+          (m: any) => m.organization_id === org.id
+        );
+        return {
+          ...org,
+          role: membership?.role,
+        };
+      });
+
+      res.json(orgsWithRoles);
     } catch (error) {
       logger.error("List organizations failed", { error });
       res.status(500).json({ error: "Failed to list organizations" });

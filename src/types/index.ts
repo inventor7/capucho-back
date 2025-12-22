@@ -5,11 +5,9 @@ export type Platform = "android" | "ios" | "web";
 
 export type Channel = string; // e.g., 'stable', 'beta', 'alpha'
 
-export type Environment = "dev" | "staging" | "prod";
-
 export interface UpdateRequest {
   platform: Platform;
-  version: string;
+  version_name: string;
   channel?: Channel;
   deviceId?: string;
   appId: string;
@@ -26,7 +24,7 @@ export interface UpdateRequest {
  * Official Capgo update response format
  */
 export interface UpdateResponse {
-  version?: string;
+  version_name?: string;
   url?: string;
   checksum?: string;
   sessionKey?: string;
@@ -64,6 +62,7 @@ export interface StatsRequest {
   platform: Platform;
   /** Version info */
   version?: string;
+  version_name?: string;
   versionBuild?: string;
   /** Device state */
   isEmulator?: boolean;
@@ -78,6 +77,7 @@ export interface ChannelAssignmentRequest {
   appId: string;
   platform: Platform;
   version?: string;
+  version_name?: string;
   versionBuild?: string;
   pluginVersion?: string;
   isEmulator?: boolean;
@@ -113,10 +113,9 @@ export interface ChannelInfo {
 }
 
 export interface UploadRequest {
-  version: string;
+  version_name: string;
   platform: Platform;
   channel?: Channel;
-  environment?: Environment;
   required?: boolean;
 }
 
@@ -138,14 +137,13 @@ export interface DashboardStatsResponse {
 }
 
 export interface BundleData {
-  id: number;
+  id: string;
   platform: Platform;
-  version: string;
+  version_name: string;
   download_url: string;
   checksum: string;
   session_key?: string;
   channel: Channel;
-  environment: Environment;
   required: boolean;
   active: boolean;
   created_at: string;
@@ -156,7 +154,6 @@ export interface ChannelData {
   id: string;
   name: string;
   platforms: Platform[];
-  environments: Environment[];
   created_at: string;
   device_count: number;
 }
@@ -173,14 +170,13 @@ export interface DeviceData {
 
 // Database record types
 export interface UpdateRecord {
-  id?: number;
+  id?: string;
   platform: Platform;
-  version: string;
+  version_name: string;
   download_url: string;
   checksum: string;
   session_key?: string;
   channel: Channel;
-  environment: Environment;
   required: boolean;
   active: boolean;
   created_at?: string;
@@ -211,17 +207,17 @@ export interface UpdateStatsRecord {
 export type NativePlatform = "android" | "ios";
 
 export interface NativeUpdateRecord {
-  id?: number;
+  id?: string;
+  app_id: string; // uuid
   platform: NativePlatform;
-  version: string;
+  version_name: string;
   version_code: number;
   download_url: string;
   checksum?: string;
   channel: string;
-  environment: Environment;
   required: boolean;
   active: boolean;
-  file_size?: number;
+  file_size_bytes?: number;
   release_notes?: string;
   created_at?: string;
 }
@@ -229,7 +225,6 @@ export interface NativeUpdateRecord {
 export interface NativeUpdateCheckRequest {
   platform: NativePlatform;
   channel?: string;
-  environment?: string;
   current_version_code: number;
 }
 
@@ -239,7 +234,7 @@ export interface NativeUpdateCheckResponse {
 }
 
 export interface NativeUpdateLogRecord {
-  id?: number;
+  id?: string;
   event: string;
   platform: string;
   device_id?: string;
@@ -247,7 +242,6 @@ export interface NativeUpdateLogRecord {
   new_version?: string;
   new_version_code?: number;
   channel?: string;
-  environment?: string;
   error_message?: string;
   created_at?: string;
 }
@@ -286,7 +280,6 @@ export interface IUpdateService {
     platform: Platform;
     appId: string;
     channel?: Channel;
-    environment?: Environment;
   }): Promise<{ updates: UpdateRecord[] }>;
   logStats(stats: StatsRequest): Promise<void>;
   assignChannel(assignment: ChannelAssignmentRequest): Promise<void>;
@@ -310,7 +303,6 @@ export interface IFileService {
 
 export interface AppConfig {
   port: number;
-  environment: Environment;
   supabase: {
     url: string;
     key: string;

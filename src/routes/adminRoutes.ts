@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { adminController, appController } from "@/controllers";
+import {
+  adminController,
+  appController,
+  nativeUpdateController,
+} from "@/controllers";
 import { rateLimiter } from "@/middleware/security";
 import { authenticate } from "@/middleware";
 
@@ -16,6 +20,12 @@ router.post(
   "/admin/upload",
   adminController.getUploadMiddleware(),
   adminController.uploadBundle.bind(adminController)
+);
+
+router.post(
+  "/admin/native-upload",
+  nativeUpdateController.getUploadMiddleware(),
+  nativeUpdateController.uploadNativeUpdate.bind(nativeUpdateController)
 );
 
 router.get(
@@ -57,6 +67,11 @@ router.delete("/dashboard/apps/:id", appController.delete.bind(appController));
 router.get(
   "/dashboard/channels",
   adminController.getChannels.bind(adminController)
+);
+
+router.get(
+  "/dashboard/channels/:id",
+  adminController.getChannel.bind(adminController)
 );
 
 router.post(

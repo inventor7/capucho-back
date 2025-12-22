@@ -27,7 +27,6 @@ class App {
     this.app.listen(config.port, () => {
       logger.info("Server started successfully", {
         port: config.port,
-        environment: config.environment,
         supabaseUrl: config.supabase.url,
         bucketName: config.supabase.bucketName,
       });
@@ -35,7 +34,6 @@ class App {
       console.log(
         `🚀 Capgo self-hosted update server running on port ${config.port}`
       );
-      console.log(`📝 Environment: ${config.environment}`);
       console.log(`🔗 Admin interface: http://localhost:${config.port}`);
       console.log(`📊 Health check: http://localhost:${config.port}/health`);
     });

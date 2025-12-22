@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import Joi from "joi";
-import { AppConfig, Environment } from "@/types";
+import { AppConfig } from "@/types";
 
 dotenv.config();
 
@@ -9,7 +9,6 @@ const envSchema = Joi.object({
     .valid("development", "production", "test")
     .default("development"),
   PORT: Joi.number().default(3000),
-  ENVIRONMENT: Joi.string().valid("dev", "staging", "prod").default("prod"),
 
   SUPABASE_URL: Joi.string().uri().required(),
   SUPABASE_KEY: Joi.string().required(),
@@ -35,7 +34,6 @@ if (error) {
 
 const config: AppConfig = {
   port: envVars.PORT,
-  environment: envVars.ENVIRONMENT as Environment,
   supabase: {
     url: envVars.SUPABASE_URL,
     key: envVars.SUPABASE_KEY,
@@ -68,4 +66,4 @@ if (!config.supabase.url || !config.supabase.key) {
 
 export default config;
 
-export const { port, environment, supabase, security, upload } = config;
+export const { port, supabase, security, upload } = config;

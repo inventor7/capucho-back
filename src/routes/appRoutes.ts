@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { appController } from "@/controllers";
+import { appController, adminController } from "@/controllers";
 import {
   authenticate,
   checkAppAccess,
@@ -53,6 +53,20 @@ router.delete(
   "/:id/permissions/:userId",
   requireAppAdmin(),
   appController.removePermission.bind(appController)
+);
+
+// App Channels
+router.get(
+  "/:id/channels",
+  checkAppAccess(),
+  adminController.getChannels.bind(adminController)
+);
+
+// App Releases (Bundles)
+router.get(
+  "/:id/releases",
+  checkAppAccess(),
+  adminController.getBundles.bind(adminController)
 );
 
 export default router;

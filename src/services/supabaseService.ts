@@ -291,6 +291,10 @@ class SupabaseService implements ISupabaseService {
     return this.client;
   }
 
+  getAdminClient(): SupabaseClient {
+    return this.storageClient;
+  }
+
   getStorageClient(): SupabaseClient {
     return this.storageClient;
   }

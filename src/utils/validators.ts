@@ -42,7 +42,6 @@ export const uploadRequestSchema = Joi.object({
   version_build: semverSchema,
   platform: platformSchema,
   channel: Joi.string().default("stable"),
-  environment: Joi.string().valid("dev", "staging", "prod").default("prod"),
   required: Joi.boolean().default(false),
 });
 
@@ -64,9 +63,10 @@ export function validateRequest(schema: Joi.ObjectSchema) {
 import logger from "./logger";
 
 export const validateUpdateParams = (req: any, res: any, next: any) => {
-  const { platform, version_build, appId, app_id, version } = req.body;
+  const { platform, version_build, appId, app_id, version, version_name } =
+    req.body;
   const actualAppId = appId || app_id;
-  const actualVersion = version || version_build;
+  const actualVersion = version_name || version || version_build;
 
   if (!platform || !actualVersion || !actualAppId) {
     logger.warn("Validation failed - missing required parameters for update", {
@@ -96,6 +96,7 @@ export const validateUpdateParams = (req: any, res: any, next: any) => {
 
   req.body.platform = platform;
   req.body.version = actualVersion;
+  req.body.version_name = actualVersion;
   req.body.appId = actualAppId;
 
   next();

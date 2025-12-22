@@ -24,17 +24,36 @@ class NativeUpdateController {
   ) {}
 
   /**
+   * Resolve string App ID (e.g. "com.example.app") to UUID
+   */
+  private async resolveAppUuid(appIdString: string): Promise<string | null> {
+    try {
+      const { data: appData, error } = await this.supabaseService
+        .getClient()
+        .from("apps")
+        .select("id")
+        .eq("app_id", appIdString)
+        .maybeSingle();
+
+      if (error) {
+        logger.error("Error resolving app UUID", { appIdString, error });
+        return null;
+      }
+
+      return appData ? appData.id : null;
+    } catch (error) {
+      logger.error("Failed to resolve app UUID", { appIdString, error });
+      return null;
+    }
+  }
+
+  /**
    * Check for available native update
    * GET /api/native-updates/check
    */
   async checkNativeUpdate(req: Request, res: Response): Promise<void> {
     try {
-      const {
-        platform,
-        channel = "stable",
-        environment = "prod",
-        current_version_code,
-      } = req.query;
+      const { platform, channel = "stable", current_version_code } = req.query;
 
       if (!platform || current_version_code === undefined) {
         throw new ValidationError(
@@ -54,7 +73,6 @@ class NativeUpdateController {
       logger.info("Checking for native update", {
         platform,
         channel,
-        environment,
         current_version_code: versionCode,
       });
 
@@ -66,7 +84,6 @@ class NativeUpdateController {
           eq: {
             platform,
             channel,
-            environment,
             active: true,
           },
           gt: { version_code: versionCode },
@@ -78,7 +95,7 @@ class NativeUpdateController {
       if (result.data && result.data.length > 0) {
         logger.info("Native update available", {
           platform,
-          newVersion: result.data?.[0]?.version,
+          newVersion: result.data?.[0]?.version_name,
           newVersionCode: result.data?.[0]?.version_code,
         });
 
@@ -118,7 +135,6 @@ class NativeUpdateController {
         new_version,
         new_version_code,
         channel,
-        environment,
         error_message,
       } = req.body;
 
@@ -136,7 +152,6 @@ class NativeUpdateController {
         new_version,
         new_version_code,
         channel,
-        environment,
         error_message,
       };
 
@@ -188,20 +203,23 @@ class NativeUpdateController {
     try {
       const {
         version,
+        version_name, // Added version_name
         version_code,
         platform,
         channel = "stable",
-        environment = "prod",
         required = false,
         release_notes,
+        app_id,
       } = req.body;
 
+      // Prioritize version_name if provided, otherwise use version
+      const finalVersion = version_name || version;
+
       logger.info("Native upload request received", {
-        version,
+        version: finalVersion, // Use finalVersion for logging
         version_code,
         platform,
         channel,
-        environment,
         required,
         file: req.file
           ? {
@@ -218,13 +236,13 @@ class NativeUpdateController {
       }
 
       // Validate required fields
-      if (!version || !version_code || !platform) {
+      if (!finalVersion || !version_code || !platform) {
         throw new ValidationError(
           "Missing required parameters: version, version_code, platform"
         );
       }
 
-      if (!semver.valid(version)) {
+      if (!semver.valid(finalVersion)) {
         throw new ValidationError(
           "Version must follow semantic versioning (e.g. 1.2.3)"
         );
@@ -232,6 +250,30 @@ class NativeUpdateController {
 
       if (!["android", "ios"].includes(platform)) {
         throw new ValidationError("Invalid platform. Must be: android, ios");
+      }
+
+      // Resolve the app UUID from bundle identifier if provided
+      const appUuid = app_id
+        ? await this.resolveAppUuid(app_id as string)
+        : null;
+
+      if (!appUuid) {
+        throw new ValidationError("Valid App ID is required");
+      }
+
+      // Security Check: If API key is scoped to a specific app, ensure it matches
+      const keyAppId = (req as any).appId;
+      if (keyAppId && keyAppId !== appUuid) {
+        logger.warn("Security breach attempt: API key app scope mismatch", {
+          keyAppId,
+          targetAppUuid: appUuid,
+          userId: (req as any).user?.id,
+        });
+        res.status(403).json({
+          error: "Forbidden",
+          message: "This API key is restricted to another application.",
+        });
+        return;
       }
 
       const versionCodeNum = parseInt(version_code, 10);
@@ -253,7 +295,7 @@ class NativeUpdateController {
       const checksum = this.fileService.calculateChecksum(buffer);
 
       // Upload file with native prefix
-      const fileName = `native/${platform}/${channel}/${environment}/v${versionCodeNum}-${version}.${ext}`;
+      const fileName = `native/${platform}/${channel}/v${versionCodeNum}-${finalVersion}.${ext}`;
       const downloadUrl = await this.supabaseService
         .getClient()
         .storage.from(config.supabase.bucketName)
@@ -275,16 +317,16 @@ class NativeUpdateController {
 
       // Create database record
       const updateRecord: Omit<NativeUpdateRecord, "id"> = {
+        app_id: appUuid,
         platform: platform as "android" | "ios",
-        version,
+        version_name: finalVersion,
         version_code: versionCodeNum,
         download_url: downloadUrl,
         checksum,
         channel,
-        environment: environment as "dev" | "staging" | "prod",
         required: required === "true" || required === true,
         active: true,
-        file_size: req.file.size,
+        file_size_bytes: req.file.size,
         release_notes: release_notes || null,
       };
 
@@ -294,7 +336,7 @@ class NativeUpdateController {
       );
 
       logger.info("Native update uploaded successfully", {
-        version,
+        version_name: finalVersion,
         version_code: versionCodeNum,
         platform,
         fileName,
@@ -304,7 +346,7 @@ class NativeUpdateController {
 
       res.json({
         success: true,
-        message: `Native update v${version} (code: ${versionCodeNum}) uploaded successfully`,
+        message: `Native update v${finalVersion} (code: ${versionCodeNum}) uploaded successfully`,
         downloadUrl,
         fileName,
         record: insertedRecord[0],
@@ -358,7 +400,7 @@ class NativeUpdateController {
       const result = await this.supabaseService.update(
         "native_updates",
         updateData,
-        { id: parseInt(id!) }
+        { id }
       );
 
       if (result.length === 0) {
@@ -384,7 +426,7 @@ class NativeUpdateController {
     try {
       const { id } = req.params;
       await this.supabaseService.delete("native_updates", {
-        id: parseInt(id!),
+        id,
       });
       res.status(204).send();
     } catch (error) {

@@ -11,6 +11,7 @@ import organizationRoutes from "./organizationRoutes";
 import userRoutes from "./userRoutes";
 import appRoutes from "./appRoutes";
 import onboardingRoutes from "./onboardingRoutes";
+import apiKeyRoutes from "./apiKeyRoutes";
 import { healthController } from "@/controllers";
 
 const router: Router = Router();
@@ -29,6 +30,7 @@ router.use("/onboarding", onboardingRoutes);
 
 router.use("/auth", authRoutes);
 router.use("/project", projectRoutes);
+router.use("/api-keys", apiKeyRoutes);
 
 router.get("/health", healthController.basicHealthCheck.bind(healthController));
 

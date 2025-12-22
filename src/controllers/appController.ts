@@ -50,6 +50,21 @@ class AppController {
         return;
       }
 
+      // 4. Force API key scope if present
+      const keyAppId = (req as any).appId;
+      if (keyAppId) {
+        const { data, error } = await supabaseService
+          .getClient()
+          .from("apps")
+          .select("*")
+          .eq("id", keyAppId)
+          .single();
+
+        if (error) throw error;
+        res.json(data ? [data] : []);
+        return;
+      }
+
       const { data, error } = await supabaseService
         .getClient()
         .from("apps")
@@ -71,6 +86,16 @@ class AppController {
   async get(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId && keyAppId !== id) {
+        res
+          .status(403)
+          .json({ error: "Forbidden: API key restricted to another app" });
+        return;
+      }
+
       const result = await supabaseService.query("apps", {
         select: "*",
         eq: { id },
@@ -137,6 +162,16 @@ class AppController {
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId && keyAppId !== id) {
+        res
+          .status(403)
+          .json({ error: "Forbidden: API key restricted to another app" });
+        return;
+      }
+
       const updateData = req.body;
       delete updateData.id;
 
@@ -167,6 +202,16 @@ class AppController {
   async getPermissions(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId && keyAppId !== id) {
+        res
+          .status(403)
+          .json({ error: "Forbidden: API key restricted to another app" });
+        return;
+      }
+
       const { data, error } = await supabaseService
         .getClient()
         .from("app_permissions")
@@ -188,6 +233,16 @@ class AppController {
   async setPermission(req: Request, res: Response): Promise<void> {
     try {
       const { id: appId } = req.params;
+
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId && keyAppId !== appId) {
+        res
+          .status(403)
+          .json({ error: "Forbidden: API key restricted to another app" });
+        return;
+      }
+
       const { user_id, role } = req.body;
 
       if (!user_id || !role) {
@@ -227,6 +282,15 @@ class AppController {
     try {
       const { id: appId, userId } = req.params;
 
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId && keyAppId !== appId) {
+        res
+          .status(403)
+          .json({ error: "Forbidden: API key restricted to another app" });
+        return;
+      }
+
       const { error } = await supabaseService
         .getClient()
         .from("app_permissions")
@@ -248,6 +312,16 @@ class AppController {
   async delete(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+
+      // Security Check: If API key is scoped to a specific app, enforce it
+      const keyAppId = (req as any).appId;
+      if (keyAppId && keyAppId !== id) {
+        res
+          .status(403)
+          .json({ error: "Forbidden: API key restricted to another app" });
+        return;
+      }
+
       await supabaseService.delete("apps", { id });
       res.status(204).send();
     } catch (error) {
